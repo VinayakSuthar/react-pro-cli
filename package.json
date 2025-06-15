@@ -21,6 +21,10 @@
     "lint:staged": "lint-staged",
     "pack": "npm run build && npm pack"
   },
+  "repository": {
+    "url": "https://github.com/VinayakSuthar/react-pro-cli",
+    "type": "git"
+  },
   "lint-staged": {
     "*.{js,ts,jsx,tsx,json}": [
       "prettier --write",
