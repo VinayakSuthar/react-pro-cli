@@ -2,7 +2,7 @@ name: Publish Awesome React
 
 on:
   release:
-    types: [created, published]
+    types: [published]
 
 jobs:
   build-and-publish:

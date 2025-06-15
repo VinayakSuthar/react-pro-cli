@@ -5,7 +5,7 @@
   "license": "ISC",
   "description": "A CLI to scaffold awesome React projects",
   "bin": {
-    "rpc": "index.mjs"
+    "rpc": "index.js"
   },
   "files": [
     "dist",
