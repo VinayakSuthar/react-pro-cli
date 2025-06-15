@@ -1,11 +1,11 @@
 {
-  "name": "@vin-1337/awesome-react",
+  "name": "@vin-1337/rpc",
   "version": "1.0.1",
   "author": "Kuldeep Suthar",
   "license": "ISC",
   "description": "A CLI to scaffold awesome React projects",
   "bin": {
-    "create-app": "index.mjs"
+    "rpc": "index.mjs"
   },
   "files": [
     "dist",
