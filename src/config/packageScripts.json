@@ -1,0 +1,4 @@
+{
+  "typescript-build": "tsc -b && vite build",
+  "typecheck": "tsc --project tsconfig.json --noEmit"
+}

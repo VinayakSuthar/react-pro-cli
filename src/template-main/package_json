@@ -1,0 +1,37 @@
+{
+  "name": "",
+  "description": "",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "author": {
+    "name": "",
+    "email": "",
+    "url": ""
+  },
+  "bugs": {
+    "url": "",
+    "email": ""
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "format": "prettier --write --no-error-on-unmatched-pattern src/**/*.{ts,tsx,js,cjs,css,md,json,scss,html} --config ./.prettierrc.json",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:css": "stylelint **/*.css",
+    "lint:eslint": "eslint",
+    "lint:eslint:fix": "eslint --fix",
+    "lint:js": "npm run lint:eslint -- . ",
+    "lint:staged": "lint-staged",
+    "postinstall": "npx husky init && echo \"npx lint-staged\" > .husky/pre-commit"
+  },
+  "lint-staged": {
+     "*src/**/*.{js,ts,jsx,tsx,json,html,css,scss}": "prettier --write",
+      "*src/**/*.{js,ts,jsx,tsx}": "eslint --cache --fix --report-unused-disable-directives"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,81 @@
+{
+  "common": {
+    "dependencies": ["react", "react-dom", "react-router-dom", "axios"],
+    "devDependencies": [
+      "eslint",
+      "prettier",
+      "eslint-config-prettier",
+      "eslint-plugin-prettier",
+      "eslint-plugin-react",
+      "vite",
+      "@vitejs/plugin-react",
+      "lint-staged",
+      "husky",
+      "stylelint",
+      "stylelint-config-standard-scss",
+      "vitest",
+      "globals",
+      "eslint-plugin-react-refresh",
+      "eslint-plugin-react-hooks"
+    ],
+    "eslint": {
+      "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:prettier/recommended"
+      ],
+      "rules": {
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "warn",
+        "react/prop-types": "off",
+        "react/react-in-jsx-scope": "off"
+      }
+    }
+  },
+  "tailwind": {
+    "eslint": {
+      "rules": {},
+      "extends": []
+    },
+    "dependencies": [],
+    "devDependencies": [
+      "tailwindcss",
+      "@tailwindcss/vite",
+      "prettier-plugin-tailwindcss"
+    ]
+  },
+  "typescript": {
+    "dependencies": [],
+    "devDependencies": [
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "@typescript-eslint/eslint-plugin",
+      "@typescript-eslint/parser",
+      "typescript",
+      "vite-tsconfig-paths",
+      "typescript-eslint"
+    ],
+    "eslint": {
+      "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "rules": {
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-non-null-assertion": "off"
+      }
+    }
+  },
+  "mui": {
+    "dependencies": [
+      "@mui/material",
+      "@emotion/react",
+      "@emotion/styled",
+      "@mui/icons-material",
+      "@fontsource/roboto"
+    ],
+    "devDependencies": [],
+    "eslint": []
+  }
+}

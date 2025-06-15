@@ -1,0 +1,56 @@
+{
+  "name": "@vin-1337/awesome-react",
+  "version": "1.0.1",
+  "author": "Kuldeep Suthar",
+  "license": "ISC",
+  "description": "A CLI to scaffold awesome React projects",
+  "bin": {
+    "create-app": "index.mjs"
+  },
+  "files": [
+    "dist",
+    "template-main"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "unbuild --stub",
+    "build": "unbuild",
+    "typecheck": "tsc --noEmit",
+    "setup": "npm run build && npx husky init && echo \"npm run lint:staged\" > .husky/pre-commit",
+    "lint:fix": "eslint --fix .",
+    "lint:staged": "lint-staged",
+    "pack": "npm run build && npm pack"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,json}": [
+      "prettier --write",
+      "eslint --fix",
+      "git add --force"
+    ]
+  },
+  "engines": {
+    "node": "^18.0.0 || >=20.0.0"
+  },
+  "dependencies": {
+    "cross-spawn": "^7.0.3",
+    "kolorist": "^1.8.0",
+    "minimist": "^1.2.8",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.6",
+    "@types/minimist": "^1.2.5",
+    "@types/prompts": "^2.4.9",
+    "eslint": "^9.9.1",
+    "fs-extra": "^11.3.0",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3",
+    "unbuild": "^2.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "@kuldep7:registry": "https://npm.pkg.github.com/"
+  },
+  "main": "index.js"
+}

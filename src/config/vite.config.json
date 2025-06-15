@@ -1,0 +1,3 @@
+{
+  "viteImports": ["vite-imports", "vite-plugins", "vite-resolve-alias"]
+}
