@@ -53,11 +53,35 @@ const cwd = process.cwd();
 
 // prettier-ignore
 const helpMessage = `\
-Usage: create-app [OPTION]... [DIRECTORY]
+Awesome React CLI - Scaffold Modern React Projects
 
-Create a new Vite project in JavaScript or TypeScript.
-With no arguments, start the CLI in interactive mode.
-`
+Usage:
+  rpc [options] [directory]
+
+Options:
+  -h, --help         Show this help message and exit
+
+Description:
+  A lightweight, modern CLI to scaffold React projects quickly and efficiently.
+  By default, starts in interactive mode if no arguments are provided.
+
+Features:
+  - Quick setup for React projects with a single command
+  - Customizable templates (includes a starter template)
+  - Modern tooling: Vite, TypeScript, Tailwind CSS, MUI, ESLint, Prettier, and more
+  - Cross-platform support (macOS, Linux, Windows)
+  - Interactive prompts for project configuration
+
+Examples:
+  rpc my-app                # Scaffold a new React project in 'my-app' directory
+  rpc                       # Start interactive mode
+  rpc --help                # Show this help message
+
+Project Links:
+  GitHub: https://github.com/VinayakSuthar/react-pro-cli
+
+For more details, see the README or run 'rpc --help'.
+`;
 
 // Define the default target directory for the new project
 const defaultTargetDir = 'react-project';
@@ -432,6 +456,16 @@ async function init() {
     { cwd: root }
   );
   executeCliCommand('git', ['init', '--quiet'], { cwd: root });
+
+  process.on('exit', () => {
+    console.log(
+      `\n${cyan('Project setup complete!')}\n` +
+        `\nNext steps:\n` +
+        `  ${yellow(`cd ${targetDir}`)}\n` +
+        `  ${yellow(`${pkgManager} install`)}\n` +
+        `  ${yellow(`${pkgManager} run dev`)}\n`
+    );
+  });
 }
 
 // This function takes the eslintrc and packageJson objects and mutates them according to the type of feature being added

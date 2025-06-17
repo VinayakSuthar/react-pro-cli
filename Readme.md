@@ -1,174 +1,174 @@
-# Awesome React CLI
+# React Pro CLI
 
-A lightweight, modern CLI tool to scaffold React projects quickly and efficiently. Built with simplicity in mind, ```@kuldep7/awesome-react``` helps developers kickstart React applications with pre-configured templates. Hosted on GitHub Packages for seamless integration with the GitHub ecosystem.
+A modern, lightweight CLI tool to scaffold React projects with best practices, pre-configured templates, and modern tooling. Published on NPM and GitHub Packages for seamless integration and rapid project setup.
+
+---
 
 ## Features
 
-- **Quick Setup**: Generate a React project with a single command.
-- **Customizable Templates**: Includes a ```template-main``` starter (expandable in future releases).
-- **Modern Tooling**: Leverages ES Modules and dependencies like ```prompts``` for an interactive experience.
-- **Cross-Platform**: Works on macOS, Linux, and Windows via ```cross-spawn```.
+- **Quick Project Setup:** Instantly scaffold a new React project with a single command.
+- **Customizable Templates:** Ships with a `template-main` starter, easily extendable for future templates.
+- **Modern Tooling:** Uses Vite, TypeScript, Tailwind CSS, MUI, ESLint, Prettier, and more.
+- **Interactive CLI:** Uses `prompts` for a user-friendly, interactive experience.
+- **Cross-Platform:** Works on macOS, Linux, and Windows.
+- **Pre-configured Linting & Formatting:** ESLint, Prettier, Stylelint, and Husky for code quality and consistency.
+- **GitHub Actions Integration:** Automated publishing to NPM and GitHub Packages.
+
+---
 
 ## Prerequisites
-- **Node.js**: Version 20 or higher.
 
-- **npm**: Version 8 or higher (bundled with Node.js). 
-## Installation 
-```@kuldep7/awesome-react``` is published to GitHub Packages. Follow these steps to install it globally:
+- **Node.js:** v18 or higher (recommended v20+)
+- **npm:** v8 or higher
 
-### Step-by-Step
+---
 
-1. **Configure npm for GitHub Packages** Set the registry for the ```@kuldep7``` <br/> ``` npm config set @kuldep7:registry https://npm.pkg.github.com/```
+## Installation
 
-- **Note**: If you encounter a 401 Unauthorized error, add a GitHub Personal Access Token (PAT). See [Authentication](#authentication) below.
+You can use the CLI directly with `npx` (no global install required):
 
-2.  **Install the CLI**  
-    Install globally to use from anywhere:
+```sh
+npx @vin-1337/rpc
+```
 
-    ```npm install -g @kuldep7/awesome-react```
+Or install globally:
 
-3.  **Verify Installation**  
-    Check it’s installed:
+```sh
+npm install -g @vin-1337/rpc
+```
 
-    ```create-app --version```
-
-    Expected output: 1.0.0 (or the latest version).
-
-### Quick Install (One-Liner)
-
-Run this to configure and install in one go:
-
-```npm config set @kuldep7:registry https://npm.pkg.github.com/ && npm install -g @kuldep7/awesome-react```
-
-- If a 401 error occurs, configure a PAT as described in [Authentication](#authentication).
+---
 
 ## Usage
 
-Once installed, use the create-app command to scaffold a new React project:
+Run the CLI to scaffold a new React project:
 
-```create-app```
+```sh
+rpc
+```
 
-- Follow the prompts to customize your project (e.g., project name, template selection).
-- The CLI will generate a directory with the React project structure based on template-main.
+You will be prompted for:
 
-### Example
+- Project name
+- Overwrite options (if directory exists)
+- Package name (auto-suggested)
+- TypeScript support (yes/no)
+- UI library (None/MUI)
+- Tailwind CSS (yes/no)
 
-create-app \
- * Prompt: Project name? my-react-app  
- * Creates ./my-react-app/ with React files 
- * cd my-react-app && npm install && npm start
+Example:
 
-## Authentication
+```sh
+rpc my-app
+```
 
-GitHub Packages may require authentication for scoped packages, even from a public repository. 
-- If you see a 401 Unauthorized error during installation, you’ll need a GitHub PAT with the read:packages scope.
+- **Prompt:** Project name? `my-app`
+- **Creates:** `./my-app/` with React files and configuration
+- **Next steps:**
+  ```sh
+  cd my-app
+  npm install
+  npm run dev
+  ```
 
-### Creating a GitHub PAT
+---
 
-1.  **Log in to GitHub**  
-    Visit [github.com](https://github.com) and sign in as kuldep7 (or your GitHub account).
-2.  **Access Token Settings**
-    - Click your profile picture (top-right) > **Settings**.
-    - Sidebar: **Developer settings** > **Personal access tokens** > **Tokens (classic)**.
-3.  **Generate Token**
-    - Click **Generate new token (classic)**.
-    - **Name**: e.g., npm-github-packages.
-    - **Expiration**: Choose 30 days (or adjust as needed).
-    - **Scopes**: Select read:packages.
-    - Click **Generate token** and copy it (e.g., ghp_abc123...).
+## What’s Included in the Generated Project?
 
-### Adding the PAT to npm
+- **Vite** for fast builds and hot reload
+- **TypeScript** (optional)
+- **Tailwind CSS** (optional)
+- **Material UI** (optional)
+- **ESLint, Prettier, Stylelint** for code quality
+- **Husky & lint-staged** for pre-commit checks
+- **Ready-to-go App and test files**
 
-Update your ~/.npmrc:
-
-```npm config set //npm.pkg.github.com/:_authToken=ghp_abc123...```
-
-- Replace ghp_abc123... with your actual token.
-- Verify:
-
-  ```cat ~/.npmrc```
-
-  Expected:
-
-  - ```@kuldep7:registry=https://npm.pkg.github.com/```
-  -  ``` //npm.pkg.github.com/:_authToken=ghp_abc123...```
-
-Retry installation:
-
-```npm install -g @kuldep7/awesome-react```
-
-## Development
-
-### Setup
-
-Clone the repo and install dependencies:
-
-```git clone https://github.com/kuldep7/awesome-react.git && cd awesome-react && npm install```
-
-### Build
-
-Compile src/ into dist/:
-
-```npm run build```
-
-- Uses unbuild to generate dist/index.mjs.
-
-### Test Locally
-
-Pack and install locally:
-
-```npm run pack npm install -g ./kuldep7-awesome-react-0.0.4.tgz create-app```
-
-### Publish (Manual)
-
-For maintainers:
-
-```npm publish --registry=https://npm.pkg.github.com/```
-
-- Requires a PAT with write:packages scope in ~/.npmrc.
-
-## Roadmap
-
-Future enhancements to make @kuldep7/awesome-react a go-to tool for React developers:
-
-- **React-Query Integration**: Add a template with react-query for seamless data fetching and caching.
-- **Zustand Support**: Include a lightweight state management option with zustand.
-- **Essential React Tools**:
-  - **React Router**: Pre-configured routing setup.
-  - **Tailwind CSS**: Optional styling with Tailwind integration.
-  - **Vite**: Switch to Vite for faster builds and development.
-- **Template Customization**: Allow users to select from multiple templates via prompts.
-- **TypeScript Support**: Add TypeScript-ready templates.
-
-Have ideas? Suggest them in the [Issues](https://github.com/kuldep7/awesome-react/issues) tab!
+---
 
 ## Project Structure
 
-awesome-react/ \
-├── dist/&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;# Built CLI (generated)  
-├── src/&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp;# Source code \
-├── template-main/&emsp;&emsp;&emsp;&emsp; # Default project template  \
-├── package.json&emsp;&emsp;&emsp;&emsp;&emsp; # Dependencies and config <br/> 
-└── README.md  &emsp;&emsp;&emsp;&emsp;&emsp; # This file
+```
+react-pro-cli/
+├── build.config.ts                # Unbuild configuration for CLI build
+├── eslint.config.mjs              # Root ESLint config
+├── index.js                       # CLI entry point (bin)
+├── package.json                   # Project manifest
+├── tsconfig.json                  # TypeScript config
+├── src/
+│   ├── index.ts                   # Main CLI logic
+│   ├── config/                    # All configuration files (JSON/TS)
+│   ├── constants/                 # Template and config string constants
+│   ├── formatters/                # Helpers for formatting configs
+│   ├── helpers/                   # Utility functions for file ops, CLI, etc.
+│   ├── template-main/             # The main React project template
+│   └── types/                     # TypeScript type definitions
+├── build/                         # Build output (gitignored)
+└── test app/                      # (Optional) Test app folder
+```
 
-## Contributing
+---
+
+## Configuration Files
+
+- **config/**: All configuration for dependencies, scripts, aliases, and tool-specific settings (Vite, Tailwind, MUI, TypeScript, etc.)
+- **constants/**: String templates for main files (e.g., `App.tsx`, `main.tsx`, Vite config, ESLint config)
+- **helpers/**: Utility functions for file operations, placeholder replacement, and CLI logic
+
+---
+
+## Contribution
 
 We welcome contributions! Here’s how:
 
-1.  Fork the repo.
-2.  Create a branch (git checkout -b feature/your-feature).
-3.  Commit changes (git commit -m "Add your feature").
-4.  Push to your fork (git push origin feature/your-feature).
-5.  Open a Pull Request.
+1. Fork the repo
+2. Create a branch:
+   ```sh
+   git checkout -b feature/your-feature
+   ```
+3. Commit changes:
+   ```sh
+   git commit -m "Add your feature"
+   ```
+4. Push to your fork:
+   ```sh
+   git push origin feature/your-feature
+   ```
+5. Open a Pull Request
 
-### Issues
+Please ensure all linting and tests pass before submitting.
 
-Report bugs or suggest features in the [Issues](https://github.com/kuldep7/awesome-react/issues) tab.
-
-## References
-
-- Inspired by: [reactjs-vite-tailwindcss-boilerplate](https://github.com/joaopaulomoraes/reactjs-vite-tailwindcss-boilerplate)
+---
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+ISC License. See [LICENSE](LICENSE) for details.
+
+---
+
+## Links
+
+- [GitHub Repository](https://github.com/VinayakSuthar/react-pro-cli)
+- [NPM Package](https://www.npmjs.com/package/@vin-1337/rpc)
+
+---
+
+## Roadmap & Upcoming Features
+
+- Multiple templates (Next.js, Redux, etc.)
+- Plugin system for custom features
+- Monorepo support
+- Customizable prompts
+- Template marketplace
+- Automatic dependency updates
+
+---
+
+## Learning Opportunities
+
+- Modern React stack (React, Vite, TypeScript, Tailwind CSS, MUI)
+- Project scaffolding and automation
+- Tooling: ESLint, Prettier, Stylelint, Husky, lint-staged
+- Configuration management
+- Template customization
+- CI/CD with GitHub Actions
+- Extending CLI tools

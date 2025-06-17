@@ -1,7 +1,7 @@
 {
   "name": "@vin-1337/rpc",
-  "version": "1.0.1",
-  "author": "Kuldeep Suthar",
+  "version": "1.0.2",
+  "author": "Vinayak Suthar",
   "license": "ISC",
   "description": "A CLI to scaffold awesome React projects",
   "bin": {
@@ -53,8 +53,7 @@
     "unbuild": "^2.0.0"
   },
   "publishConfig": {
-    "access": "public",
-    "@kuldep7:registry": "https://npm.pkg.github.com/"
+    "access": "public"
   },
   "main": "index.js"
 }
