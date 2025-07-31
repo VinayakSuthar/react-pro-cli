@@ -53,7 +53,7 @@ const cwd = process.cwd();
 
 // prettier-ignore
 const helpMessage = `\
-Awesome React CLI - Scaffold Modern React Projects
+Awesome React CLI - Scaffold Modern React Projects custom changes
 
 Usage:
   rpc [options] [directory]
