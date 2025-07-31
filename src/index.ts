@@ -98,7 +98,8 @@ async function init() {
   const getProjectName = () =>
     targetDir === '.' ? path.basename(path.resolve()) : targetDir;
 
-  let result: any = {};
+  // Use Partial<prompts.Answers<IResultAnswersKeys>> for the result variable, which makes all properties optional since they are populated through multiple prompts calls
+  let result: Partial<prompts.Answers<IResultAnswersKeys>>;
   let needsProjectNameRePrompt = false;
 
   prompts.override({
