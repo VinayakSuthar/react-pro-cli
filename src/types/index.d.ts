@@ -4,7 +4,9 @@ type IResultAnswers =
   | 'packageName'
   | 'tailwindCSS'
   | 'uiLibrary'
-  | 'typescript';
+  | 'typescript'
+  | 'changeName'
+  | 'overwriteChecker';
 interface IWriteDirs {
   templateDir: string;
   root: string;
