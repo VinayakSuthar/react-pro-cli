@@ -1,10 +1,14 @@
-type IResultAnswers =
+type IResultAnswersKeys =
   | 'projectName'
   | 'overwrite'
+  | 'overwriteChecker'
   | 'packageName'
   | 'tailwindCSS'
   | 'uiLibrary'
-  | 'typescript';
+  | 'typescript'
+  | 'changeName';
+
+
 interface IWriteDirs {
   templateDir: string;
   root: string;

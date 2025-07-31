@@ -98,126 +98,159 @@ async function init() {
   const getProjectName = () =>
     targetDir === '.' ? path.basename(path.resolve()) : targetDir;
 
-  let result: prompts.Answers<IResultAnswers>;
+  // Use Partial<prompts.Answers<IResultAnswersKeys>> for the result variable, which makes all properties optional since they are populated through multiple prompts calls
+  let result: Partial<prompts.Answers<IResultAnswersKeys>>;
+  let needsProjectNameRePrompt = false;
 
   prompts.override({
     overwrite: argv.overwrite
   });
-  try {
-    result = await prompts(
-      [
-        {
-          type: 'text',
-          name: 'projectName',
-          message: cyan('Project name : '),
-          initial: targetDir,
-          onState: (state) => {
-            targetDir = formatTargetDir(state.value) || targetDir;
-          }
-        },
-        {
-          type: () =>
-            !fs.existsSync(targetDir) || isEmpty(targetDir) ? null : 'select',
-          name: 'overwrite',
-          message: () =>
-            cyan(
-              (targetDir === '.'
-                ? 'Current directory'
-                : `Target directory "${targetDir}"`) +
-                ` is not empty. Please choose how to proceed : `
-            ),
-          initial: 0,
-          choices: [
-            {
-              title: yellow('Remove existing files and continue'),
-              value: 'yes'
-            },
-            {
-              title: yellow('Cancel operation'),
-              value: 'no'
-            },
-            {
-              title: yellow('Ignore files and continue'),
-              value: 'ignore'
+
+  // Main prompt loop to handle project name changes
+  do {
+    needsProjectNameRePrompt = false;
+    
+    try {
+      result = await prompts(
+        [
+          {
+            type: 'text',
+            name: 'projectName',
+            message: cyan('Project name : '),
+            initial: targetDir,
+            onState: (state) => {
+              targetDir = formatTargetDir(state.value) || targetDir;
             }
-          ]
-        },
-        {
-          type: (_, { overwrite }: { overwrite?: string }) => {
-            if (overwrite === 'no') {
-              throw new Error(red('✖') + ' Operation cancelled');
-            }
-            return null;
           },
-          name: 'overwriteChecker'
-        },
-        {
-          type: () => (isValidPackageName(getProjectName()) ? null : 'text'),
-          name: 'packageName',
-          message: cyan('Package name : '),
-          initial: () => toValidPackageName(getProjectName()),
-          validate: (dir) =>
-            isValidPackageName(dir) || 'Invalid package.json name'
-        },
-        {
-          type: 'select',
-          name: 'typescript',
-          message: cyan('Do you want to have TypeScript ? '),
-          initial: 0,
-          choices: [
-            {
-              title: yellow('Yes'),
-              value: true
+          {
+            type: () =>
+              !fs.existsSync(targetDir) || isEmpty(targetDir) ? null : 'select',
+            name: 'overwrite',
+            message: () =>
+              cyan(
+                (targetDir === '.'
+                  ? 'Current directory'
+                  : `Target directory "${targetDir}"`) +
+                  ` is not empty. Please choose how to proceed : `
+              ),
+            initial: 0,
+            choices: [
+              {
+                title: yellow('Change project name'),
+                value: 'changeName'
+              },
+              {
+                title: yellow('Cancel operation'),
+                value: 'no'
+              }
+            ]
+          },
+          {
+            type: (_, { overwrite }: { overwrite?: string }) => {
+              if (overwrite === 'no') {
+                throw new Error(red('✖') + ' Operation cancelled - A directory with this name already exists. Please choose a different project name or remove the existing directory.');
+              }
+              if (overwrite === 'changeName') {
+                needsProjectNameRePrompt = true;
+              }
+              return null;
             },
-            {
-              title: yellow('No'),
-              value: false
-            }
-          ]
-        },
+            name: 'overwriteChecker'
+          }
+        ],
         {
-          type: 'select',
-          name: 'uiLibrary',
-          message: cyan('Please select an ui library of your choice : '),
-          initial: 0,
-          choices: [
-            {
-              title: yellow('None'),
-              value: 'none'
-            },
-            {
-              title: yellow('MUI'),
-              value: 'mui'
-            }
-          ]
-        },
-        {
-          type: 'select',
-          name: 'tailwindCSS',
-          message: cyan('Do you want to have Tailwind CSS ? '),
-          initial: 0,
-          choices: [
-            {
-              title: yellow('Yes'),
-              value: true
-            },
-            {
-              title: yellow('No'),
-              value: false
-            }
-          ]
+          onCancel: () => {
+            throw new Error(red('✖') + ' Operation cancelled');
+          }
         }
-      ],
-      {
-        onCancel: () => {
-          throw new Error(red('✖') + ' Operation cancelled');
+      );
+    } catch (cancelled: any) {
+      console.log(cancelled.message);
+      return;
+    }
+    
+    // If we need to re-prompt for project name, continue the loop
+    if (needsProjectNameRePrompt) {
+      continue;
+    }
+    
+    // Continue with the rest of the prompts only if we don't need to re-prompt
+    try {
+      const additionalResult = await prompts(
+        [
+          {
+            type: () => (isValidPackageName(getProjectName()) ? null : 'text'),
+            name: 'packageName',
+            message: cyan('Package name : '),
+            initial: () => toValidPackageName(getProjectName()),
+            validate: (dir) =>
+              isValidPackageName(dir) || 'Invalid package.json name'
+          },
+          {
+            type: 'select',
+            name: 'typescript',
+            message: cyan('Do you want to have TypeScript ? '),
+            initial: 0,
+            choices: [
+              {
+                title: yellow('Yes'),
+                value: true
+              },
+              {
+                title: yellow('No'),
+                value: false
+              }
+            ]
+          },
+          {
+            type: 'select',
+            name: 'uiLibrary',
+            message: cyan('Please select an ui library of your choice : '),
+            initial: 0,
+            choices: [
+              {
+                title: yellow('None'),
+                value: 'none'
+              },
+              {
+                title: yellow('MUI'),
+                value: 'mui'
+              }
+            ]
+          },
+          {
+            type: 'select',
+            name: 'tailwindCSS',
+            message: cyan('Do you want to have Tailwind CSS ? '),
+            initial: 0,
+            choices: [
+              {
+                title: yellow('Yes'),
+                value: true
+              },
+              {
+                title: yellow('No'),
+                value: false
+              }
+            ]
+          }
+        ],
+        {
+          onCancel: () => {
+            throw new Error(red('✖') + ' Operation cancelled');
+          }
         }
-      }
-    );
-  } catch (cancelled: any) {
-    console.log(cancelled.message);
-    return;
-  }
+      );
+      
+      // Merge the results
+      result = { ...result, ...additionalResult };
+      
+    } catch (cancelled: any) {
+      console.log(cancelled.message);
+      return;
+    }
+    
+  } while (needsProjectNameRePrompt);
 
   const {
     overwrite,
