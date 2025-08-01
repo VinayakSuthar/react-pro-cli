@@ -14,7 +14,7 @@ interface IWriteDirs {
   root: string;
 }
 
-type IMutateConfig = 'tailwind' | 'typescript' | 'mui';
+type IMutateConfig = 'tailwind' | 'typescript' | 'mui' | 'shadcn';
 
 type JsConfig = {
   compilerOptions?: {

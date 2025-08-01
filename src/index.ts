@@ -25,6 +25,7 @@ import PACKAGE_CONFIG, {
   TAILWIND_CONFIG,
   MAIN_CONFIG,
   MUI_CONFIG,
+  SHADCN_CONFIG,
   TS_CONFIG,
   DEPENDENCIES_VERSIONS,
   PACKAGE_SCRIPTS,
@@ -32,6 +33,7 @@ import PACKAGE_CONFIG, {
 } from './config';
 import MAIN_FILE_CONTENT from './constants/mainTemplateContent';
 import appContent from './constants/appComponent';
+import shadcnAppContent from './constants/shadcnAppComponent';
 import VITE_CONFIG from './constants/viteConfig';
 import eslintTSConfig from './constants/eslintTSconfig';
 import eslintJSconfig from './constants/eslintJSconfig';
@@ -109,7 +111,7 @@ async function init() {
   // Main prompt loop to handle project name changes
   do {
     needsProjectNameRePrompt = false;
-    
+
     try {
       result = await prompts(
         [
@@ -131,7 +133,7 @@ async function init() {
                 (targetDir === '.'
                   ? 'Current directory'
                   : `Target directory "${targetDir}"`) +
-                  ` is not empty. Please choose how to proceed : `
+                ` is not empty. Please choose how to proceed : `
               ),
             initial: 0,
             choices: [
@@ -168,12 +170,12 @@ async function init() {
       console.log(cancelled.message);
       return;
     }
-    
+
     // If we need to re-prompt for project name, continue the loop
     if (needsProjectNameRePrompt) {
       continue;
     }
-    
+
     // Continue with the rest of the prompts only if we don't need to re-prompt
     try {
       const additionalResult = await prompts(
@@ -215,13 +217,19 @@ async function init() {
               {
                 title: yellow('MUI'),
                 value: 'mui'
+              },
+              {
+                title: yellow('Shadcn/ui'),
+                value: 'shadcn'
               }
             ]
           },
           {
-            type: 'select',
+            type: (prev) => prev === 'shadcn' ? null : 'select',
             name: 'tailwindCSS',
-            message: cyan('Do you want to have Tailwind CSS ? '),
+            message: (prev) => prev === 'shadcn' ?
+              cyan('Tailwind CSS will be automatically included with Shadcn/ui') :
+              cyan('Do you want to have Tailwind CSS ? '),
             initial: 0,
             choices: [
               {
@@ -241,15 +249,15 @@ async function init() {
           }
         }
       );
-      
+
       // Merge the results
       result = { ...result, ...additionalResult };
-      
+
     } catch (cancelled: any) {
       console.log(cancelled.message);
       return;
     }
-    
+
   } while (needsProjectNameRePrompt);
 
   const {
@@ -259,6 +267,14 @@ async function init() {
     typescript: isTypescriptSelected,
     uiLibrary
   } = result;
+
+  // Automatically enable Tailwind for Shadcn
+  const shouldIncludeTailwind = isTailwindSelected || uiLibrary === 'shadcn';
+
+  // Show message about automatic Tailwind inclusion
+  if (uiLibrary === 'shadcn') {
+    console.log(cyan('✓ Tailwind CSS will be automatically included with Shadcn/ui'));
+  }
 
   // Get the absolute path of the target directory
   const root = path.join(cwd, targetDir);
@@ -317,14 +333,16 @@ async function init() {
 
   try {
     const file = `${root}/src/App.${isTypescriptSelected ? 'tsx' : 'jsx'}`;
-    fs.writeFileSync(file, appContent);
+    // TODO: remove turnary when more than 2 uiLibrary are supported
+    const appComponentContent = uiLibrary === 'shadcn' ? shadcnAppContent : appContent;
+    fs.writeFileSync(file, appComponentContent);
     // file written successfully
   } catch (err) {
     console.error(err);
   }
 
   // If Tailwind CSS is enabled, mutate the configs for ESLint and package.json
-  if (isTailwindSelected) {
+  if (shouldIncludeTailwind) {
     mutateConfigs({ packageJson: packageJsonObj }, 'tailwind');
     viteImports.push("import tailwindcss from '@tailwindcss/vite'");
     vitePlugins.push('tailwindcss()');
@@ -349,7 +367,7 @@ async function init() {
         }
       });
 
-      if (isTailwindSelected) {
+      if (shouldIncludeTailwind) {
         MUI_CONFIG.muiTailwindImports.forEach((key) => {
           const value = MAIN_CONFIG[key as keyof typeof MAIN_CONFIG];
           if (value) {
@@ -367,9 +385,298 @@ async function init() {
         `import { createTheme } from '@mui/material';\nconst theme = createTheme({});\nexport default theme;`
       );
 
-      if (isTailwindSelected) {
+      if (shouldIncludeTailwind) {
         mainCss = MUI_CONFIG.indexCSS + mainCss;
       }
+    } else if (uiLibrary === 'shadcn') {
+      mutateConfigs({ packageJson: packageJsonObj }, 'shadcn');
+
+      // Create utils file for Shadcn
+      const utilsDir = `${root}/src/lib`;
+      if (!fs.existsSync(utilsDir)) {
+        fs.mkdirSync(utilsDir, { recursive: true });
+      }
+
+      writeToFile(
+        `src/lib/utils.${isTypescriptSelected ? 'ts' : 'js'}`,
+        { root, templateDir },
+        SHADCN_CONFIG.utilsContent
+      );
+
+      // Create components/ui directory
+      const componentsDir = `${root}/src/components/ui`;
+      if (!fs.existsSync(componentsDir)) {
+        fs.mkdirSync(componentsDir, { recursive: true });
+      }
+
+      // Create Button component
+      const buttonContent = isTypescriptSelected ? `
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+` : `
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "button"
+  return (
+    <Comp
+      className={cn(buttonVariants({ variant, size, className }))}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+`;
+
+      writeToFile(
+        `src/components/ui/button.${isTypescriptSelected ? 'tsx' : 'jsx'}`,
+        { root, templateDir },
+        buttonContent
+      );
+
+      // Create Card component
+      const cardContent = isTypescriptSelected ? `
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+const Card = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      className
+    )}
+    {...props}
+  />
+))
+Card.displayName = "Card"
+
+const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+))
+CardHeader.displayName = "CardHeader"
+
+const CardTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={cn(
+      "text-2xl font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+))
+CardTitle.displayName = "CardTitle"
+
+const CardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+CardDescription.displayName = "CardDescription"
+
+const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+CardContent.displayName = "CardContent"
+
+const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center p-6 pt-0", className)}
+    {...props}
+  />
+))
+CardFooter.displayName = "CardFooter"
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+` : `
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+const Card = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      className
+    )}
+    {...props}
+  />
+))
+Card.displayName = "Card"
+
+const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
+))
+CardHeader.displayName = "CardHeader"
+
+const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={cn(
+      "text-2xl font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+))
+CardTitle.displayName = "CardTitle"
+
+const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+CardDescription.displayName = "CardDescription"
+
+const CardContent = React.forwardRef(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+CardContent.displayName = "CardContent"
+
+const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("flex items-center p-6 pt-0", className)}
+    {...props}
+  />
+))
+CardFooter.displayName = "CardFooter"
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+`;
+
+      writeToFile(
+        `src/components/ui/card.${isTypescriptSelected ? 'tsx' : 'jsx'}`,
+        { root, templateDir },
+        cardContent
+      );
+
+      // Add Shadcn-specific CSS
+      mainCss = SHADCN_CONFIG.indexCSS + '\n\n' + mainCss;
     }
   }
 
@@ -493,10 +800,10 @@ async function init() {
   process.on('exit', () => {
     console.log(
       `\n${cyan('Project setup complete!')}\n` +
-        `\nNext steps:\n` +
-        `  ${yellow(`cd ${targetDir}`)}\n` +
-        `  ${yellow(`${pkgManager} install`)}\n` +
-        `  ${yellow(`${pkgManager} run dev`)}\n`
+      `\nNext steps:\n` +
+      `  ${yellow(`cd ${targetDir}`)}\n` +
+      `  ${yellow(`${pkgManager} install`)}\n` +
+      `  ${yellow(`${pkgManager} run dev`)}\n`
     );
   });
 }

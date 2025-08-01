@@ -77,5 +77,23 @@
     ],
     "devDependencies": [],
     "eslint": []
+  },
+  "shadcn": {
+    "dependencies": [
+      "class-variance-authority",
+      "clsx",
+      "tailwind-merge",
+      "lucide-react",
+      "@radix-ui/react-slot"
+    ],
+    "devDependencies": [
+      "tailwindcss",
+      "@tailwindcss/vite",
+      "prettier-plugin-tailwindcss"
+    ],
+    "eslint": {
+      "rules": {},
+      "extends": []
+    }
   }
 }
