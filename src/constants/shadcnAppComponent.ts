@@ -1,7 +1,7 @@
 const shadcnAppContent = `
   import { Route, Routes } from 'react-router-dom';
-  import { Button } from './components/ui/button';
-  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
+  import { Button } from '@/components/ui/button';
+  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
   function App() {
     return (

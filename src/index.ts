@@ -400,7 +400,7 @@ async function init() {
       writeToFile(
         `src/lib/utils.${isTypescriptSelected ? 'ts' : 'js'}`,
         { root, templateDir },
-        SHADCN_CONFIG.utilsContent
+        isTypescriptSelected ? SHADCN_CONFIG.utilsContent.typescript : SHADCN_CONFIG.utilsContent.javascript
       );
 
       // Create components/ui directory
