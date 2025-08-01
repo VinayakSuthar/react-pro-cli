@@ -675,8 +675,7 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
         cardContent
       );
 
-      // Add Shadcn-specific CSS
-      mainCss = SHADCN_CONFIG.indexCSS + '\n\n' + mainCss;
+      mainCss = SHADCN_CONFIG.indexCSS;
     }
   }
 
