@@ -1,7 +1,7 @@
 const MAIN_FILE_CONTENT = `
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client'; 
-import { BrowserRouter as Router } from 'react-router-dom';
+~~react-router-import~~
 ~~mui-import~~
 ~~mui-theme-import~~
 
@@ -12,9 +12,9 @@ createRoot(document.getElementById('root')~~main-ts-non-null~~).render(
   <StrictMode>
     ~~mui-style-engine-open-tag~~
       ~~mui-open-tag~~
-        <Router>
+        ~~router-open-tag~~
           <App />
-        </Router>
+        ~~router-close-tag~~
       ~~mui-close-tag~~
     ~~mui-style-engine-close-tag~~
   </StrictMode>

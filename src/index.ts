@@ -23,7 +23,7 @@ import {
 // Import the MAIN_CONFIG object which contains configuration for the project
 import PACKAGE_CONFIG, {
   TAILWIND_CONFIG,
-  MAIN_CONFIG,
+  PLACEHOLDERS_CONFIG,
   MUI_CONFIG,
   SHADCN_CONFIG,
   TS_CONFIG,
@@ -33,15 +33,19 @@ import PACKAGE_CONFIG, {
 } from './config';
 import MAIN_FILE_CONTENT from './constants/mainTemplateContent';
 import appContent from './constants/appComponent';
-import shadcnAppContent from './constants/shadcnAppComponent';
+import appContentNoRouter from './constants/appComponentNoRouter';
 import VITE_CONFIG from './constants/viteConfig';
 import eslintTSConfig from './constants/eslintTSconfig';
 import eslintJSconfig from './constants/eslintJSconfig';
 import mainCssContent from './constants/mainCss';
-import { buttonComponentTypeScript, buttonComponentJavaScript } from './constants/shadcnButtonComponent';
-import { cardComponentTypeScript, cardComponentJavaScript } from './constants/shadcnCardComponent';
-
-const mainConfigRegex = new RegExp(/~~(.*?)~~/g);
+import {
+  buttonComponentTypeScript,
+  buttonComponentJavaScript
+} from './constants/shadcnButtonComponent';
+import {
+  cardComponentTypeScript,
+  cardComponentJavaScript
+} from './constants/shadcnCardComponent';
 
 // Parse command-line arguments using minimist
 const argv = minimist<{
@@ -135,7 +139,7 @@ async function init() {
                 (targetDir === '.'
                   ? 'Current directory'
                   : `Target directory "${targetDir}"`) +
-                ` is not empty. Please choose how to proceed : `
+                  ` is not empty. Please choose how to proceed : `
               ),
             initial: 0,
             choices: [
@@ -152,7 +156,10 @@ async function init() {
           {
             type: (_, { overwrite }: { overwrite?: string }) => {
               if (overwrite === 'no') {
-                throw new Error(red('✖') + ' Operation cancelled - A directory with this name already exists. Please choose a different project name or remove the existing directory.');
+                throw new Error(
+                  red('✖') +
+                    ' Operation cancelled - A directory with this name already exists. Please choose a different project name or remove the existing directory.'
+                );
               }
               if (overwrite === 'changeName') {
                 needsProjectNameRePrompt = true;
@@ -227,12 +234,31 @@ async function init() {
             ]
           },
           {
-            type: (prev) => prev === 'shadcn' ? null : 'select',
+            type: (prev) => (prev === 'shadcn' ? null : 'select'),
             name: 'tailwindCSS',
-            message: (prev) => prev === 'shadcn' ?
-              cyan('Tailwind CSS will be automatically included with Shadcn/ui') :
-              cyan('Do you want to have Tailwind CSS ? '),
+            message: (prev) =>
+              prev === 'shadcn'
+                ? cyan(
+                    'Tailwind CSS will be automatically included with Shadcn/ui'
+                  )
+                : cyan('Do you want to have Tailwind CSS ? '),
             initial: 0,
+            choices: [
+              {
+                title: yellow('Yes'),
+                value: true
+              },
+              {
+                title: yellow('No'),
+                value: false
+              }
+            ]
+          },
+          {
+            type: 'select',
+            name: 'reactRouter',
+            message: cyan('Do you want to have React Router ? '),
+            initial: false,
             choices: [
               {
                 title: yellow('Yes'),
@@ -254,12 +280,10 @@ async function init() {
 
       // Merge the results
       result = { ...result, ...additionalResult };
-
     } catch (cancelled: any) {
       console.log(cancelled.message);
       return;
     }
-
   } while (needsProjectNameRePrompt);
 
   const {
@@ -267,7 +291,8 @@ async function init() {
     packageName,
     tailwindCSS: isTailwindSelected,
     typescript: isTypescriptSelected,
-    uiLibrary
+    uiLibrary,
+    reactRouter
   } = result;
 
   // Automatically enable Tailwind for Shadcn
@@ -275,7 +300,9 @@ async function init() {
 
   // Show message about automatic Tailwind inclusion
   if (uiLibrary === 'shadcn') {
-    console.log(cyan('✓ Tailwind CSS will be automatically included with Shadcn/ui'));
+    console.log(
+      cyan('✓ Tailwind CSS will be automatically included with Shadcn/ui')
+    );
   }
 
   // Get the absolute path of the target directory
@@ -291,7 +318,9 @@ async function init() {
   // Get information about the package manager being used
   const pkgInfo = pkgFromUserAgent(process.env.npm_MAIN_CONFIG_user_agent);
   const pkgManager = pkgInfo ? pkgInfo.name : 'npm';
-  const viteConfigFilename = isTypescriptSelected ? 'vite.config.ts' : 'vite.config.js';
+  const viteConfigFilename = isTypescriptSelected
+    ? 'vite.config.ts'
+    : 'vite.config.js';
   const filesToExclude = ['.eslintrc', 'package.json', viteConfigFilename];
   let mainFileContent = MAIN_FILE_CONTENT;
   let mainCss = mainCssContent;
@@ -336,8 +365,10 @@ async function init() {
 
   try {
     const file = `${root}/src/App.${isTypescriptSelected ? 'tsx' : 'jsx'}`;
-    // TODO: remove turnary when more than 2 uiLibrary are supported
-    const appComponentContent = uiLibrary === 'shadcn' ? shadcnAppContent : appContent;
+
+    // Choose App component based on React Router selection
+    const appComponentContent = reactRouter ? appContent : appContentNoRouter;
+
     fs.writeFileSync(file, appComponentContent);
     // file written successfully
   } catch (err) {
@@ -358,13 +389,34 @@ async function init() {
     mainCss = TAILWIND_CONFIG.files['src/index.css'] + mainCss;
   }
 
+  // If React Router is enabled, add router dependencies
+  if (reactRouter) {
+    mutateConfigs({ packageJson: packageJsonObj }, 'router');
+
+    const routerPlaceholderMap: Record<string, string> = {};
+    ['react-router-import', 'router-open-tag', 'router-close-tag'].forEach(
+      (key) => {
+        const value =
+          PLACEHOLDERS_CONFIG[key as keyof typeof PLACEHOLDERS_CONFIG];
+        if (value) {
+          routerPlaceholderMap[key] = value;
+        }
+      }
+    );
+    mainFileContent = updateConfigPlaceholders(
+      mainFileContent,
+      routerPlaceholderMap
+    );
+  }
+
   // If a UI library is selected, mutate the configs for ESLint and package.json
   if (uiLibrary !== 'none') {
     if (uiLibrary === 'mui') {
       mutateConfigs({ packageJson: packageJsonObj }, 'mui');
       const mainFilePHMap: Record<string, string> = {};
       MUI_CONFIG.muiImports.forEach((key) => {
-        const value = MAIN_CONFIG[key as keyof typeof MAIN_CONFIG];
+        const value =
+          PLACEHOLDERS_CONFIG[key as keyof typeof PLACEHOLDERS_CONFIG];
         if (value) {
           mainFilePHMap[key] = value;
         }
@@ -372,7 +424,8 @@ async function init() {
 
       if (shouldIncludeTailwind) {
         MUI_CONFIG.muiTailwindImports.forEach((key) => {
-          const value = MAIN_CONFIG[key as keyof typeof MAIN_CONFIG];
+          const value =
+            PLACEHOLDERS_CONFIG[key as keyof typeof PLACEHOLDERS_CONFIG];
           if (value) {
             mainFilePHMap[key] = value;
           }
@@ -403,7 +456,9 @@ async function init() {
       writeToFile(
         `src/lib/utils.${isTypescriptSelected ? 'ts' : 'js'}`,
         { root, templateDir },
-        isTypescriptSelected ? SHADCN_CONFIG.utilsContent.typescript : SHADCN_CONFIG.utilsContent.javascript
+        isTypescriptSelected
+          ? SHADCN_CONFIG.utilsContent.typescript
+          : SHADCN_CONFIG.utilsContent.javascript
       );
 
       // Create components/ui directory
@@ -413,7 +468,9 @@ async function init() {
       }
 
       // Create Button component
-      const buttonContent = isTypescriptSelected ? buttonComponentTypeScript : buttonComponentJavaScript;
+      const buttonContent = isTypescriptSelected
+        ? buttonComponentTypeScript
+        : buttonComponentJavaScript;
 
       writeToFile(
         `src/components/ui/button.${isTypescriptSelected ? 'tsx' : 'jsx'}`,
@@ -422,7 +479,9 @@ async function init() {
       );
 
       // Create Card component
-      const cardContent = isTypescriptSelected ? cardComponentTypeScript : cardComponentJavaScript;
+      const cardContent = isTypescriptSelected
+        ? cardComponentTypeScript
+        : cardComponentJavaScript;
 
       writeToFile(
         `src/components/ui/card.${isTypescriptSelected ? 'tsx' : 'jsx'}`,
@@ -433,8 +492,10 @@ async function init() {
       // Create components.json file for shadcn/ui
       const componentsConfig = { ...SHADCN_CONFIG.componentsConfig };
       componentsConfig.tsx = isTypescriptSelected;
-      componentsConfig.tailwind.config = isTypescriptSelected ? 'tailwind.config.ts' : 'tailwind.config.js';
-      
+      componentsConfig.tailwind.config = isTypescriptSelected
+        ? 'tailwind.config.ts'
+        : 'tailwind.config.js';
+
       writeToFile(
         'components.json',
         { root, templateDir },
@@ -569,10 +630,10 @@ async function init() {
   process.on('exit', () => {
     console.log(
       `\n${cyan('Project setup complete!')}\n` +
-      `\nNext steps:\n` +
-      `  ${yellow(`cd ${targetDir}`)}\n` +
-      `  ${yellow(`${pkgManager} install`)}\n` +
-      `  ${yellow(`${pkgManager} run dev`)}\n`
+        `\nNext steps:\n` +
+        `  ${yellow(`cd ${targetDir}`)}\n` +
+        `  ${yellow(`${pkgManager} install`)}\n` +
+        `  ${yellow(`${pkgManager} run dev`)}\n`
     );
   });
 }
