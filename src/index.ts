@@ -290,7 +290,7 @@ async function init() {
             type: 'select',
             name: 'installDependencies',
             message: cyan(
-              'Do you want to install dependencies after scaffolding ? '
+              'Do you want to install dependencies after scaffolding?'
             ),
             initial: 0,
             choices: [
