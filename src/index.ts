@@ -257,7 +257,7 @@ async function init() {
           {
             type: 'select',
             name: 'reactRouter',
-            message: cyan('Do you want to have React Router ? '),
+            message: cyan('Do you want to use React Router ? '),
             initial: false,
             choices: [
               {
@@ -273,9 +273,7 @@ async function init() {
           {
             type: 'select',
             name: 'reactQuery',
-            message: cyan(
-              'Do you want to have React Query (TanStack Query) ? '
-            ),
+            message: cyan('Do you want to use React Query (TanStack Query) ? '),
             initial: false,
             choices: [
               {
