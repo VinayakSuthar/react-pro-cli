@@ -25,6 +25,7 @@ import PACKAGE_CONFIG, {
   TAILWIND_CONFIG,
   MAIN_CONFIG,
   MUI_CONFIG,
+  SHADCN_CONFIG,
   TS_CONFIG,
   DEPENDENCIES_VERSIONS,
   PACKAGE_SCRIPTS,
@@ -32,10 +33,13 @@ import PACKAGE_CONFIG, {
 } from './config';
 import MAIN_FILE_CONTENT from './constants/mainTemplateContent';
 import appContent from './constants/appComponent';
+import shadcnAppContent from './constants/shadcnAppComponent';
 import VITE_CONFIG from './constants/viteConfig';
 import eslintTSConfig from './constants/eslintTSconfig';
 import eslintJSconfig from './constants/eslintJSconfig';
 import mainCssContent from './constants/mainCss';
+import { buttonComponentTypeScript, buttonComponentJavaScript } from './constants/shadcnButtonComponent';
+import { cardComponentTypeScript, cardComponentJavaScript } from './constants/shadcnCardComponent';
 
 const mainConfigRegex = new RegExp(/~~(.*?)~~/g);
 
@@ -109,7 +113,7 @@ async function init() {
   // Main prompt loop to handle project name changes
   do {
     needsProjectNameRePrompt = false;
-    
+
     try {
       result = await prompts(
         [
@@ -131,7 +135,7 @@ async function init() {
                 (targetDir === '.'
                   ? 'Current directory'
                   : `Target directory "${targetDir}"`) +
-                  ` is not empty. Please choose how to proceed : `
+                ` is not empty. Please choose how to proceed : `
               ),
             initial: 0,
             choices: [
@@ -168,12 +172,12 @@ async function init() {
       console.log(cancelled.message);
       return;
     }
-    
+
     // If we need to re-prompt for project name, continue the loop
     if (needsProjectNameRePrompt) {
       continue;
     }
-    
+
     // Continue with the rest of the prompts only if we don't need to re-prompt
     try {
       const additionalResult = await prompts(
@@ -215,13 +219,19 @@ async function init() {
               {
                 title: yellow('MUI'),
                 value: 'mui'
+              },
+              {
+                title: yellow('Shadcn/ui'),
+                value: 'shadcn'
               }
             ]
           },
           {
-            type: 'select',
+            type: (prev) => prev === 'shadcn' ? null : 'select',
             name: 'tailwindCSS',
-            message: cyan('Do you want to have Tailwind CSS ? '),
+            message: (prev) => prev === 'shadcn' ?
+              cyan('Tailwind CSS will be automatically included with Shadcn/ui') :
+              cyan('Do you want to have Tailwind CSS ? '),
             initial: 0,
             choices: [
               {
@@ -241,15 +251,15 @@ async function init() {
           }
         }
       );
-      
+
       // Merge the results
       result = { ...result, ...additionalResult };
-      
+
     } catch (cancelled: any) {
       console.log(cancelled.message);
       return;
     }
-    
+
   } while (needsProjectNameRePrompt);
 
   const {
@@ -259,6 +269,14 @@ async function init() {
     typescript: isTypescriptSelected,
     uiLibrary
   } = result;
+
+  // Automatically enable Tailwind for Shadcn
+  const shouldIncludeTailwind = isTailwindSelected || uiLibrary === 'shadcn';
+
+  // Show message about automatic Tailwind inclusion
+  if (uiLibrary === 'shadcn') {
+    console.log(cyan('✓ Tailwind CSS will be automatically included with Shadcn/ui'));
+  }
 
   // Get the absolute path of the target directory
   const root = path.join(cwd, targetDir);
@@ -273,14 +291,15 @@ async function init() {
   // Get information about the package manager being used
   const pkgInfo = pkgFromUserAgent(process.env.npm_MAIN_CONFIG_user_agent);
   const pkgManager = pkgInfo ? pkgInfo.name : 'npm';
-  const filesToExclude = ['.eslintrc', 'package.json', 'vite.config.js'];
+  const viteConfigFilename = isTypescriptSelected ? 'vite.config.ts' : 'vite.config.js';
+  const filesToExclude = ['.eslintrc', 'package.json', viteConfigFilename];
   let mainFileContent = MAIN_FILE_CONTENT;
   let mainCss = mainCssContent;
 
-  console.log(`${reset(`\nScaffolding project in ${root}...\n`)}`);
+  console.log(reset('\nScaffolding project in ' + root + '...\n'));
 
   // Define the template directory based on whether TypeScript is enabled
-  const template = isTypescriptSelected ? 'template-main' : 'template-main';
+  const template = 'template-main';
 
   // Get the absolute path of the template directory
   const templateDir = path.resolve(
@@ -317,14 +336,16 @@ async function init() {
 
   try {
     const file = `${root}/src/App.${isTypescriptSelected ? 'tsx' : 'jsx'}`;
-    fs.writeFileSync(file, appContent);
+    // TODO: remove turnary when more than 2 uiLibrary are supported
+    const appComponentContent = uiLibrary === 'shadcn' ? shadcnAppContent : appContent;
+    fs.writeFileSync(file, appComponentContent);
     // file written successfully
   } catch (err) {
     console.error(err);
   }
 
   // If Tailwind CSS is enabled, mutate the configs for ESLint and package.json
-  if (isTailwindSelected) {
+  if (shouldIncludeTailwind) {
     mutateConfigs({ packageJson: packageJsonObj }, 'tailwind');
     viteImports.push("import tailwindcss from '@tailwindcss/vite'");
     vitePlugins.push('tailwindcss()');
@@ -349,7 +370,7 @@ async function init() {
         }
       });
 
-      if (isTailwindSelected) {
+      if (shouldIncludeTailwind) {
         MUI_CONFIG.muiTailwindImports.forEach((key) => {
           const value = MAIN_CONFIG[key as keyof typeof MAIN_CONFIG];
           if (value) {
@@ -367,9 +388,60 @@ async function init() {
         `import { createTheme } from '@mui/material';\nconst theme = createTheme({});\nexport default theme;`
       );
 
-      if (isTailwindSelected) {
+      if (shouldIncludeTailwind) {
         mainCss = MUI_CONFIG.indexCSS + mainCss;
       }
+    } else if (uiLibrary === 'shadcn') {
+      mutateConfigs({ packageJson: packageJsonObj }, 'shadcn');
+
+      // Create utils file for Shadcn
+      const utilsDir = `${root}/src/lib`;
+      if (!fs.existsSync(utilsDir)) {
+        fs.mkdirSync(utilsDir, { recursive: true });
+      }
+
+      writeToFile(
+        `src/lib/utils.${isTypescriptSelected ? 'ts' : 'js'}`,
+        { root, templateDir },
+        isTypescriptSelected ? SHADCN_CONFIG.utilsContent.typescript : SHADCN_CONFIG.utilsContent.javascript
+      );
+
+      // Create components/ui directory
+      const componentsDir = `${root}/src/components/ui`;
+      if (!fs.existsSync(componentsDir)) {
+        fs.mkdirSync(componentsDir, { recursive: true });
+      }
+
+      // Create Button component
+      const buttonContent = isTypescriptSelected ? buttonComponentTypeScript : buttonComponentJavaScript;
+
+      writeToFile(
+        `src/components/ui/button.${isTypescriptSelected ? 'tsx' : 'jsx'}`,
+        { root, templateDir },
+        buttonContent
+      );
+
+      // Create Card component
+      const cardContent = isTypescriptSelected ? cardComponentTypeScript : cardComponentJavaScript;
+
+      writeToFile(
+        `src/components/ui/card.${isTypescriptSelected ? 'tsx' : 'jsx'}`,
+        { root, templateDir },
+        cardContent
+      );
+
+      // Create components.json file for shadcn/ui
+      const componentsConfig = { ...SHADCN_CONFIG.componentsConfig };
+      componentsConfig.tsx = isTypescriptSelected;
+      componentsConfig.tailwind.config = isTypescriptSelected ? 'tailwind.config.ts' : 'tailwind.config.js';
+      
+      writeToFile(
+        'components.json',
+        { root, templateDir },
+        JSON.stringify(componentsConfig, null, 2)
+      );
+
+      mainCss = SHADCN_CONFIG.indexCSS;
     }
   }
 
@@ -389,6 +461,10 @@ async function init() {
     indexHtmlContent = indexHtmlContent.replace('src/main.jsx', 'src/main.tsx');
 
     mainFileContent = mainFileContent.replace('~~main-ts-non-null~~', '!');
+
+    // Add vite-tsconfig-paths for TypeScript path mapping
+    viteImports.push("import tsconfigPaths from 'vite-tsconfig-paths'");
+    vitePlugins.push('tsconfigPaths()');
 
     fs.writeFileSync(`${root}/tsconfig.json`, JSON.stringify(TS_CONFIG.main));
     fs.writeFileSync(`${root}/tsconfig.app.json`, JSON.stringify(tsConfig));
@@ -465,7 +541,7 @@ async function init() {
       filename: 'package.json',
       content: JSON.stringify(packageJsonObj, null, 2)
     },
-    { filename: 'vite.config.js', content: viteConfig }
+    { filename: viteConfigFilename, content: viteConfig }
   ];
 
   // Write the contents of the files to the target directory
@@ -493,10 +569,10 @@ async function init() {
   process.on('exit', () => {
     console.log(
       `\n${cyan('Project setup complete!')}\n` +
-        `\nNext steps:\n` +
-        `  ${yellow(`cd ${targetDir}`)}\n` +
-        `  ${yellow(`${pkgManager} install`)}\n` +
-        `  ${yellow(`${pkgManager} run dev`)}\n`
+      `\nNext steps:\n` +
+      `  ${yellow(`cd ${targetDir}`)}\n` +
+      `  ${yellow(`${pkgManager} install`)}\n` +
+      `  ${yellow(`${pkgManager} run dev`)}\n`
     );
   });
 }
