@@ -285,6 +285,24 @@ async function init() {
                 value: false
               }
             ]
+          },
+          {
+            type: 'select',
+            name: 'installDependencies',
+            message: cyan(
+              'Do you want to install dependencies after scaffolding?'
+            ),
+            initial: 0,
+            choices: [
+              {
+                title: yellow('Yes'),
+                value: true
+              },
+              {
+                title: yellow('No'),
+                value: false
+              }
+            ]
           }
         ],
         {
@@ -309,7 +327,8 @@ async function init() {
     typescript: isTypescriptSelected,
     uiLibrary,
     reactRouter,
-    reactQuery
+    reactQuery,
+    installDependencies
   } = result;
 
   // Automatically enable Tailwind for Shadcn
@@ -667,13 +686,38 @@ async function init() {
   );
   executeCliCommand('git', ['init', '--quiet'], { cwd: root });
 
+  // Install dependencies if user chose to
+  if (installDependencies) {
+    console.log(reset('\nInstalling dependencies...\n'));
+    try {
+      executeCliCommand(pkgManager, ['install'], { cwd: root });
+    } catch (error) {
+      console.log(
+        red(
+          '✖ Failed to install dependencies. You can install them manually later.'
+        )
+      );
+      console.error(error);
+    }
+  }
+
   process.on('exit', () => {
+    const nextSteps = installDependencies
+      ? [
+          `  ${yellow(`cd ${targetDir}`)}`,
+          `  ${yellow(`${pkgManager} run dev`)}`
+        ]
+      : [
+          `  ${yellow(`cd ${targetDir}`)}`,
+          `  ${yellow(`${pkgManager} install`)}`,
+          `  ${yellow(`${pkgManager} run dev`)}`
+        ];
+
     console.log(
       `\n${cyan('Project setup complete!')}\n` +
         `\nNext steps:\n` +
-        `  ${yellow(`cd ${targetDir}`)}\n` +
-        `  ${yellow(`${pkgManager} install`)}\n` +
-        `  ${yellow(`${pkgManager} run dev`)}\n`
+        nextSteps.join('\n') +
+        '\n'
     );
   });
 }

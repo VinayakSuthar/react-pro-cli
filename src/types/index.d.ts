@@ -8,7 +8,8 @@ type IResultAnswersKeys =
   | 'typescript'
   | 'changeName'
   | 'reactRouter'
-  | 'reactQuery';
+  | 'reactQuery'
+  | 'installDependencies';
 
 interface IWriteDirs {
   templateDir: string;
