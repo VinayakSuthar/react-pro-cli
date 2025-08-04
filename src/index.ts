@@ -269,6 +269,24 @@ async function init() {
                 value: false
               }
             ]
+          },
+          {
+            type: 'select',
+            name: 'reactQuery',
+            message: cyan(
+              'Do you want to have React Query (TanStack Query) ? '
+            ),
+            initial: false,
+            choices: [
+              {
+                title: yellow('Yes'),
+                value: true
+              },
+              {
+                title: yellow('No'),
+                value: false
+              }
+            ]
           }
         ],
         {
@@ -292,7 +310,8 @@ async function init() {
     tailwindCSS: isTailwindSelected,
     typescript: isTypescriptSelected,
     uiLibrary,
-    reactRouter
+    reactRouter,
+    reactQuery
   } = result;
 
   // Automatically enable Tailwind for Shadcn
@@ -406,6 +425,29 @@ async function init() {
     mainFileContent = updateConfigPlaceholders(
       mainFileContent,
       routerPlaceholderMap
+    );
+  }
+
+  // If React Query is enabled, add query dependencies
+  if (reactQuery) {
+    mutateConfigs({ packageJson: packageJsonObj }, 'reactQuery');
+
+    const queryPlaceholderMap: Record<string, string> = {};
+    [
+      'react-query-import',
+      'query-client-declaration',
+      'query-client-provider-open',
+      'query-client-provider-close'
+    ].forEach((key) => {
+      const value =
+        PLACEHOLDERS_CONFIG[key as keyof typeof PLACEHOLDERS_CONFIG];
+      if (value) {
+        queryPlaceholderMap[key] = value;
+      }
+    });
+    mainFileContent = updateConfigPlaceholders(
+      mainFileContent,
+      queryPlaceholderMap
     );
   }
 

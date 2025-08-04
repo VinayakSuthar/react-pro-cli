@@ -7,14 +7,21 @@ type IResultAnswersKeys =
   | 'uiLibrary'
   | 'typescript'
   | 'changeName'
-  | 'reactRouter';
+  | 'reactRouter'
+  | 'reactQuery';
 
 interface IWriteDirs {
   templateDir: string;
   root: string;
 }
 
-type IMutateConfig = 'tailwind' | 'typescript' | 'mui' | 'shadcn' | 'router';
+type IMutateConfig =
+  | 'tailwind'
+  | 'typescript'
+  | 'mui'
+  | 'shadcn'
+  | 'router'
+  | 'reactQuery';
 
 type JsConfig = {
   compilerOptions?: {

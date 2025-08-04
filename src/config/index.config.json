@@ -40,6 +40,14 @@
       "extends": []
     }
   },
+  "reactQuery": {
+    "dependencies": ["@tanstack/react-query"],
+    "devDependencies": [],
+    "eslint": {
+      "rules": {},
+      "extends": []
+    }
+  },
   "tailwind": {
     "eslint": {
       "rules": {},
