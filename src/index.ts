@@ -289,14 +289,15 @@ async function init() {
   // Get information about the package manager being used
   const pkgInfo = pkgFromUserAgent(process.env.npm_MAIN_CONFIG_user_agent);
   const pkgManager = pkgInfo ? pkgInfo.name : 'npm';
-  const filesToExclude = ['.eslintrc', 'package.json', 'vite.config.js'];
+  const viteConfigFilename = isTypescriptSelected ? 'vite.config.ts' : 'vite.config.js';
+  const filesToExclude = ['.eslintrc', 'package.json', viteConfigFilename];
   let mainFileContent = MAIN_FILE_CONTENT;
   let mainCss = mainCssContent;
 
-  console.log(`${reset(`\nScaffolding project in ${root}...\n`)}`);
+  console.log(reset('\nScaffolding project in ' + root + '...\n'));
 
   // Define the template directory based on whether TypeScript is enabled
-  const template = isTypescriptSelected ? 'template-main' : 'template-main';
+  const template = 'template-main';
 
   // Get the absolute path of the template directory
   const templateDir = path.resolve(
@@ -696,6 +697,10 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
 
     mainFileContent = mainFileContent.replace('~~main-ts-non-null~~', '!');
 
+    // Add vite-tsconfig-paths for TypeScript path mapping
+    viteImports.push("import tsconfigPaths from 'vite-tsconfig-paths'");
+    vitePlugins.push('tsconfigPaths()');
+
     fs.writeFileSync(`${root}/tsconfig.json`, JSON.stringify(TS_CONFIG.main));
     fs.writeFileSync(`${root}/tsconfig.app.json`, JSON.stringify(tsConfig));
     fs.writeFileSync(
@@ -771,7 +776,7 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
       filename: 'package.json',
       content: JSON.stringify(packageJsonObj, null, 2)
     },
-    { filename: 'vite.config.js', content: viteConfig }
+    { filename: viteConfigFilename, content: viteConfig }
   ];
 
   // Write the contents of the files to the target directory

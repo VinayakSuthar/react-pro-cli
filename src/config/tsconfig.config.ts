@@ -4,7 +4,11 @@ const tsConfig = {
     references: [
       { path: './tsconfig.app.json' },
       { path: './tsconfig.node.json' }
-    ]
+    ],
+    compilerOptions: {
+      strict: true,
+      forceConsistentCasingInFileNames: true
+    }
   },
   app: {
     compilerOptions: {
@@ -37,7 +41,7 @@ const tsConfig = {
     compilerOptions: {
       tsBuildInfoFile: './node_modules/.tmp/tsconfig.node.tsbuildinfo',
       target: 'ES2022',
-      lib: ['ES2023'],
+      lib: ['ES2022'],
       module: 'ESNext',
       skipLibCheck: true,
 
@@ -50,6 +54,7 @@ const tsConfig = {
 
       /* Linting */
       strict: true,
+      forceConsistentCasingInFileNames: true,
       noUnusedLocals: true,
       noUnusedParameters: true,
       noFallthroughCasesInSwitch: true,
