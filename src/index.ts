@@ -676,6 +676,17 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
         cardContent
       );
 
+      // Create components.json file for shadcn/ui
+      const componentsConfig = { ...SHADCN_CONFIG.componentsConfig };
+      componentsConfig.tsx = isTypescriptSelected;
+      componentsConfig.tailwind.config = isTypescriptSelected ? 'tailwind.config.ts' : 'tailwind.config.js';
+      
+      writeToFile(
+        'components.json',
+        { root, templateDir },
+        JSON.stringify(componentsConfig, null, 2)
+      );
+
       mainCss = SHADCN_CONFIG.indexCSS;
     }
   }
