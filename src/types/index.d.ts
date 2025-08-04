@@ -6,15 +6,22 @@ type IResultAnswersKeys =
   | 'tailwindCSS'
   | 'uiLibrary'
   | 'typescript'
-  | 'changeName';
-
+  | 'changeName'
+  | 'reactRouter'
+  | 'reactQuery';
 
 interface IWriteDirs {
   templateDir: string;
   root: string;
 }
 
-type IMutateConfig = 'tailwind' | 'typescript' | 'mui' | 'shadcn';
+type IMutateConfig =
+  | 'tailwind'
+  | 'typescript'
+  | 'mui'
+  | 'shadcn'
+  | 'router'
+  | 'reactQuery';
 
 type JsConfig = {
   compilerOptions?: {

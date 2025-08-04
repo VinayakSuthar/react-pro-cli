@@ -8,5 +8,9 @@
   "mui-close-tag": "</ThemeProvider>",
   "react-router-import": "import { BrowserRouter as Router } from 'react-router-dom'",
   "router-open-tag": "<Router>",
-  "router-close-tag": "</Router>"
+  "router-close-tag": "</Router>",
+  "react-query-import": "import { QueryClient, QueryClientProvider } from '@tanstack/react-query'",
+  "query-client-declaration": "const queryClient = new QueryClient();",
+  "query-client-provider-open": "<QueryClientProvider client={queryClient}>",
+  "query-client-provider-close": "</QueryClientProvider>"
 }

@@ -1,11 +1,6 @@
 {
   "common": {
-    "dependencies": [
-      "react",
-      "react-dom",
-      "react-router-dom",
-      "axios"
-    ],
+    "dependencies": ["react", "react-dom", "axios"],
     "devDependencies": [
       "eslint",
       "prettier",
@@ -35,6 +30,22 @@
         "react/prop-types": "off",
         "react/react-in-jsx-scope": "off"
       }
+    }
+  },
+  "router": {
+    "dependencies": ["react-router-dom"],
+    "devDependencies": [],
+    "eslint": {
+      "rules": {},
+      "extends": []
+    }
+  },
+  "reactQuery": {
+    "dependencies": ["@tanstack/react-query"],
+    "devDependencies": [],
+    "eslint": {
+      "rules": {},
+      "extends": []
     }
   },
   "tailwind": {
