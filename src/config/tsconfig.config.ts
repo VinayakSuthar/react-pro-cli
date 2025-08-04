@@ -6,6 +6,10 @@ const tsConfig = {
       { path: './tsconfig.node.json' }
     ],
     compilerOptions: {
+      baseUrl: ".",
+      paths: {
+        "@/*": ["./src/*"]
+      },
       strict: true,
       forceConsistentCasingInFileNames: true
     }
