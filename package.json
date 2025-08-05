@@ -1,6 +1,6 @@
 {
   "name": "@vin-1337/rpc",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "Vinayak Suthar",
   "license": "ISC",
   "description": "A CLI to scaffold awesome React projects",
