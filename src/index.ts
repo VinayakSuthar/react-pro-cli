@@ -26,6 +26,7 @@ import PACKAGE_CONFIG, {
   PLACEHOLDERS_CONFIG,
   MUI_CONFIG,
   SHADCN_CONFIG,
+  ANTD_CONFIG,
   TS_CONFIG,
   DEPENDENCIES_VERSIONS,
   PACKAGE_SCRIPTS,
@@ -76,7 +77,7 @@ Description:
 Features:
   - Quick setup for React projects with a single command
   - Customizable templates (includes a starter template)
-  - Modern tooling: Vite, TypeScript, Tailwind CSS, MUI, ESLint, Prettier, and more
+  - Modern tooling: Vite, TypeScript, Tailwind CSS, MUI, Ant Design, ESLint, Prettier, and more
   - Cross-platform support (macOS, Linux, Windows)
   - Interactive prompts for project configuration
 
@@ -224,8 +225,12 @@ async function init() {
                 value: 'none'
               },
               {
-                title: yellow('MUI'),
+                title: yellow('Material UI'),
                 value: 'mui'
+              },
+              {
+                title: yellow('Ant Design'),
+                value: 'antd'
               },
               {
                 title: yellow('Shadcn/ui'),
@@ -234,14 +239,19 @@ async function init() {
             ]
           },
           {
-            type: (prev) => (prev === 'shadcn' ? null : 'select'),
+            type: (prev) =>
+              prev === 'shadcn' || prev === 'antd' ? null : 'select',
             name: 'tailwindCSS',
             message: (prev) =>
               prev === 'shadcn'
                 ? cyan(
                     'Tailwind CSS will be automatically included with Shadcn/ui'
                   )
-                : cyan('Do you want to have Tailwind CSS ? '),
+                : prev === 'antd'
+                  ? cyan(
+                      'Ant Design has its own design system. Tailwind CSS is not recommended.'
+                    )
+                  : cyan('Do you want to have Tailwind CSS ? '),
             initial: 0,
             choices: [
               {
@@ -361,7 +371,7 @@ async function init() {
   let mainFileContent = MAIN_FILE_CONTENT;
   let mainCss = mainCssContent;
 
-  console.log(reset('\nScaffolding project in ' + root + '...\n'));
+  console.log(reset('\nScaffolding project in ' + root + ' 📽️'));
 
   // Define the template directory based on whether TypeScript is enabled
   const template = 'template-main';
@@ -562,6 +572,20 @@ async function init() {
       );
 
       mainCss = SHADCN_CONFIG.indexCSS;
+    } else if (uiLibrary === 'antd') {
+      mutateConfigs({ packageJson: packageJsonObj }, 'antd');
+      const mainFilePHMap: Record<string, string> = {};
+      ANTD_CONFIG.antdImports.forEach((key) => {
+        const value =
+          PLACEHOLDERS_CONFIG[key as keyof typeof PLACEHOLDERS_CONFIG];
+        if (value) {
+          mainFilePHMap[key] = value;
+        }
+      });
+      mainFileContent = updateConfigPlaceholders(
+        mainFileContent,
+        mainFilePHMap
+      );
     }
   }
 
@@ -688,7 +712,7 @@ async function init() {
 
   // Install dependencies if user chose to
   if (installDependencies) {
-    console.log(reset('\nInstalling dependencies...\n'));
+    console.log(reset('\nInstalling dependencies 📦\n'));
     try {
       executeCliCommand(pkgManager, ['install'], { cwd: root });
     } catch (error) {

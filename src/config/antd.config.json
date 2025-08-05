@@ -1,0 +1,9 @@
+{
+  "dependencies": ["antd", "@ant-design/icons"],
+  "antdImports": [
+    "antd-import",
+    "antd-config-provider-open-tag",
+    "antd-config-provider-close-tag"
+  ],
+  "indexCSS": ""
+}

@@ -8,7 +8,7 @@ A modern, lightweight CLI tool to scaffold React projects with best practices, p
 
 - **Quick Project Setup:** Instantly scaffold a new React project with a single command.
 - **Customizable Templates:** Ships with a `template-main` starter, easily extendable for future templates.
-- **Modern Tooling:** Uses Vite, TypeScript, Tailwind CSS, MUI, ESLint, Prettier, and more.
+- **Modern Tooling:** Uses Vite, TypeScript, Tailwind CSS, MUI, Ant Design, ESLint, Prettier, and more.
 - **Interactive CLI:** Uses `prompts` for a user-friendly, interactive experience.
 - **Cross-Platform:** Works on macOS, Linux, and Windows.
 - **Pre-configured Linting & Formatting:** ESLint, Prettier, Stylelint, and Husky for code quality and consistency.
@@ -53,7 +53,7 @@ You will be prompted for:
 - Overwrite options (if directory exists)
 - Package name (auto-suggested)
 - TypeScript support (yes/no)
-- UI library (None/MUI)
+- UI library (None/MUI/Ant Design/Shadcn/ui)
 - Tailwind CSS (yes/no)
 
 Example:
@@ -78,7 +78,7 @@ rpc my-app
 - **Vite** for fast builds and hot reload
 - **TypeScript** (optional)
 - **Tailwind CSS** (optional)
-- **Material UI** (optional)
+- **Material UI** or **Ant Design** (optional)
 - **ESLint, Prettier, Stylelint** for code quality
 - **Husky & lint-staged** for pre-commit checks
 - **Ready-to-go App and test files**
