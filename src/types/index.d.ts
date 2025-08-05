@@ -20,6 +20,7 @@ type IMutateConfig =
   | 'tailwind'
   | 'typescript'
   | 'mui'
+  | 'antd'
   | 'shadcn'
   | 'router'
   | 'reactQuery';

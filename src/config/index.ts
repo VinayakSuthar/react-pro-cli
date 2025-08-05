@@ -1,6 +1,7 @@
 import PACKAGE_CONFIG from './index.config.json';
 import MUI_CONFIG from './mui.config.json';
 import SHADCN_CONFIG from './shadcn.config.json';
+import ANTD_CONFIG from './antd.config.json';
 import TAILWIND_CONFIG from './tailwind.config.json';
 import PLACEHOLDERS_CONFIG from './placeholders.json';
 import TS_CONFIG from './tsconfig.config';
@@ -12,6 +13,7 @@ export {
   PACKAGE_CONFIG as default,
   MUI_CONFIG,
   SHADCN_CONFIG,
+  ANTD_CONFIG,
   TAILWIND_CONFIG,
   PLACEHOLDERS_CONFIG,
   TS_CONFIG,
